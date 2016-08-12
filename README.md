@@ -23,7 +23,7 @@ library(plyr) # v1.8.4
 library(dplyr) # v0.5.0
 ```
 
-The raw data are published on the cloudfront website as a zipped folder. Before the data can be read it has to be downloaded to a local folder, in this case called `data`.
+The raw data are published on the cloudfront website as a [zipped folder](https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip). Before the data can be read it has to be downloaded to a local folder, in this case called `data`.
 
 At the first run this folder might not exist yet, so it is created if so. The data is downloaded only once under the assumption it does not change online. The zip file is extracted every time to make sure the raw data is the same in every run.
 
@@ -32,20 +32,14 @@ The extracted data are located in a subdirectory of the data dir, so we have to 
 ``` r
 # Configure remote and local data locations
 data.url <- 'https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip'
-data.dir = 'data'
-data.file <- file.path(data.dir, 'UCI_HAR_Dataset.zip')
-# Create local data directory if necessary
-if (!dir.exists(data.dir)) {
-    dir.create(data.dir, recursive = TRUE)
-}
+data.dir <- 'UCI HAR Dataset'
+data.file <- 'UCI_HAR_Dataset.zip'
 # Download the remote file to the data directory
 if (!file.exists(data.file)) {
-    download.file(url = data.url, destfile = data.file, overwrite = TRUE)
+    download.file(url = data.url, destfile = data.file)
 }
 # Unzip the downloaded file
-unzip(data.file, exdir = data.dir)
-# Set new data directory
-data.dir <- file.path(data.dir, 'UCI HAR Dataset')
+unzip(data.file, exdir = '.', overwrite = TRUE)
 ```
 
 ### File format
@@ -175,7 +169,7 @@ print(first_lines)
     ## [19,] "5"   
     ## [20,] "5"
 
-From these first lines it appears that for the train.X and test.X files no delimiter is used, but instead a fixed width format is used. From the [features.txt](data/UCI%20HAR%20Dataset/features.txt) file we know there should be 561 fields in the file, so an educated guess for the field width is `line_length / 561`, which should probably be equal for both the training and test datasets.
+From these first lines it appears that for the train.X and test.X files no delimiter is used, but instead a fixed width format is used. From the [features.txt](UCI%20HAR%20Dataset/features.txt) file we know there should be 561 fields in the file, so an educated guess for the field width is `line_length / 561`, which should probably be equal for both the training and test datasets.
 
 ``` r
 # Calculate field widths assuming all fields have equal width
@@ -198,7 +192,7 @@ paste('Field width:', field_width)
 
 ### Read data
 
-From the [README](data/UCI%20HAR%20Dataset/README.txt) of the dataset and the first lines of the subject and y files it appears they both contain a single column of values. Both files provide identification numbers, and as such should be read as factors. Since the field width or delimiter are irrelevant the data is read using `read_delim`, with a tab as delimiter, to prevent excess spaces from introducing new (empty) columns.
+From the [README](UCI%20HAR%20Dataset/README.txt) of the dataset and the first lines of the subject and y files it appears they both contain a single column of values. Both files provide identification numbers, and as such should be read as factors. Since the field width or delimiter are irrelevant the data is read using `read_delim`, with a tab as delimiter, to prevent excess spaces from introducing new (empty) columns.
 
 ``` r
 # Read the subject id's (numbered 1 to 30), using column name S
@@ -254,7 +248,7 @@ data <- bind_rows(bind_cols(data$train.subject, data$train.X, data$train.y),
 
 ### Renaming activities
 
-The activities in the dataset at this point are still numerics. In the [activity\_labels](data/UCI%20HAR%20Dataset/activity_labels.txt) file the corresponding labels are mentioned. We can use these to set the levels of the activity factor after converting to lower case and replacing underscores with spaces.
+The activities in the dataset at this point are still numerics. In the [activity\_labels](UCI%20HAR%20Dataset/activity_labels.txt) file the corresponding labels are mentioned. We can use these to set the levels of the activity factor after converting to lower case and replacing underscores with spaces.
 
 To make sure the labels are mapped to the correct numeric value (instead of relying on the positions being correct), the `mapvalues` function from the `plyr` package is used.
 
@@ -274,7 +268,7 @@ data$y %<>% mapvalues(from = act_lab$id, to = act_lab$label)
 
 ### Variable names
 
-The names of the variables are available in the file [features.txt](data/UCI%20HAR%20Dataset/features.txt) provided with the dataset. Treating it as a space delimited file we can import the second column to use as a basis for the variable names.
+The names of the variables are available in the file [features.txt](UCI%20HAR%20Dataset/features.txt) provided with the dataset. Treating it as a space delimited file we can import the second column to use as a basis for the variable names.
 
 For brevity the parantheses are removed from the variable names.
 
@@ -295,7 +289,7 @@ names(data) <- c('subject', var_names, 'activity')
 
 Next check is for duplicate variable names, which should be dealt with before performing further analysis. Since we only need the variables containing `mean` or `std` (and the subject and activity id's), we can extract those first as duplicate names in the other variables are no problem at this point.
 
-Note that the regular expression used only extracts the variables for which the substrings `mean` and `std` are following a dash. This explicitly rules out the variables created using the `angle()` function (see [features\_info.txt](data/UCI%20HAR%20Dataset/features_info.txt)).
+Note that the regular expression used only extracts the variables for which the substrings `mean` and `std` are following a dash. This explicitly rules out the variables created using the `angle()` function (see [features\_info.txt](UCI%20HAR%20Dataset/features_info.txt)).
 
 ``` r
 # Select columns using grep which returns indices of columns that match
