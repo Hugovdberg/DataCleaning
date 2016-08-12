@@ -1,0 +1,297 @@
+---
+title: "Getting and Cleaning Data - README"
+output: github_document
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This project contains the scripts and data for the Course Project in partial
+fulfilment of the Coursera 'Getting and Cleaning Data' course (part of the 
+[Data Science](https://www.coursera.org/specializations/jhu-data-science) 
+specialisation). 
+The purpose of this project is to demonstrate how a messy dataset can be 
+downloaded from an online source and munged into a tidy dataset.
+
+The most important files are this README, the [codebook](CodeBook.md) and 
+the [script](run_analysis.R). 
+A number of supporting in this repository can be ignored, such as the .Rmd 
+files which were used to build the .md files. 
+The script `run_analysis.R` was created by extracting the code from 
+`README.Rmd`, and as such the script is included in annotated form below.
+
+## Methods
+
+This analysis is performed with the use of the packages listed below (versions
+appended on each line).
+`magrittr` is used to provide not only the `%>%` operator, but the `%<>%` as 
+well.
+The `%<>%` operator is similar to the `%>%` operator in that the left hand side 
+is passed to the right hand function as the first argument, but additionally 
+stores the result of the right hand function back into the left hand variable.
+
+```{r load_libs, error=TRUE, warning=FALSE, message=FALSE}
+# Libraries to read inputs
+library(readr) # v1.0.0
+
+# Libraries to munge data
+library(magrittr) # v1.5
+library(plyr) # v1.8.4
+library(dplyr) # v0.5.0
+```
+
+The raw data are published on the cloudfront website as a zipped folder.
+Before the data can be read it has to be downloaded to a local folder, in this
+case called `data`.
+
+At the first run this folder might not exist yet, so it is created if so.
+The data is downloaded only once under the assumption it does not change online.
+The zip file is extracted every time to make sure the raw data is the same in
+every run.
+
+The extracted data are located in a subdirectory of the data dir, so we have
+to set the data.dir variable to that new directory before we traverse the tree.
+
+```{r download}
+# Configure remote and local data locations
+data.url <- 'https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip'
+data.dir = 'data'
+data.file <- file.path(data.dir, 'UCI_HAR_Dataset.zip')
+# Create local data directory if necessary
+if (!dir.exists(data.dir)) {
+    dir.create(data.dir, recursive = TRUE)
+}
+# Download the remote file to the data directory
+if (!file.exists(data.file)) {
+    download.file(url = data.url, destfile = data.file, overwrite = TRUE)
+}
+# Unzip the downloaded file
+unzip(data.file, exdir = data.dir)
+# Set new data directory
+data.dir <- file.path(data.dir, 'UCI HAR Dataset')
+```
+
+### File format
+After downloading and extracting the data the first thing to do next is
+read in the raw files and check the dimensions of the data.
+
+For each file the first twenty lines are printed to see what kind of delimiter 
+should be used.
+This is done using the `readLines` function with argument `n = 20`.
+
+```{r check_delims}
+# Create a list of the paths to the data files
+data <- list(
+    train.subject = file.path(data.dir, 'train', 'subject_train.txt'),
+    train.X = file.path(data.dir, 'train', 'X_train.txt'),
+    train.y = file.path(data.dir, 'train', 'y_train.txt'),
+    test.subject = file.path(data.dir, 'test', 'subject_test.txt'),
+    test.X = file.path(data.dir, 'test', 'X_test.txt'),
+    test.y = file.path(data.dir, 'test', 'y_test.txt')
+)
+# Extract the first lines from each file in the list `data`
+first_lines <- sapply(data, readLines, n = 20)
+print(first_lines)
+```
+
+From these first lines it appears that for the train.X and test.X files no 
+delimiter is used, but instead a fixed width format is used.
+From the [features.txt](data/UCI HAR Dataset/features.txt) file we know there 
+should be 561 fields in the file, so an educated guess for the field width is
+`line_length / 561`, which should probably be equal for both the training and
+test datasets.
+
+```{r field_widths, results='hold'}
+# Calculate field widths assuming all fields have equal width
+field_width.train <- sapply(first_lines[, 2], nchar, USE.NAMES = FALSE) / 561
+field_width.test <- sapply(first_lines[, 5], nchar, USE.NAMES = FALSE) / 561
+# Check if calculated field widths are internally consistent
+paste('Train widths equal:', all(field_width.train == field_width.train[1]))
+paste('Test widths equal:', all(field_width.test == field_width.test[1]))
+paste('Train widths equal to Test widths:', 
+      all(field_width.train == field_width.test))
+# Store field_width for future usage and print it
+field_width <- field_width.train[1]
+paste('Field width:', field_width)
+```
+
+### Read data
+
+From the [README](data/UCI HAR Dataset/README.txt) of the dataset and the first
+lines of the subject and y files it appears they both contain a single column
+of values.
+Both files provide identification numbers, and as such should be read as 
+factors.
+Since the field width or delimiter are irrelevant the data is read using 
+`read_delim`, with a tab as delimiter, to prevent excess spaces from 
+introducing new (empty) columns.
+
+```{r read_data}
+# Read the subject id's (numbered 1 to 30), using column name S
+data$train.subject %<>% read_delim(delim = "\t", 
+                                   col_names = "S",
+                                   col_types = cols(col_factor(seq(1, 30))))
+data$test.subject %<>% read_delim(delim = "\t", 
+                                  col_names = "S",
+                                  col_types = cols(col_factor(seq(1, 30))))
+
+# Read the activity labels (numbered 1 to 6), using column name y
+data$train.y %<>% read_delim(delim = "\t",
+                             col_names = "y",
+                             col_types = cols(col_factor(seq(1, 6))))
+data$test.y %<>% read_delim(delim = "\t",
+                             col_names = "y",
+                             col_types = cols(col_factor(seq(1, 6))))
+
+# Read the features as numeric
+data$train.X %<>% read_fwf(col_positions = fwf_widths(rep(field_width, 561)),
+                           col_types = paste0(rep("d", 561), collapse = ""))
+data$test.X %<>% read_fwf(col_positions = fwf_widths(rep(field_width, 561)),
+                          col_types = paste0(rep("d", 561), collapse = ""))
+```
+
+### Merge data
+
+Now we have the 6 data files in memory, the next step is to check the 
+dimensions of the files to see in which direction these should be merged.
+
+```{r check_dims}
+# Calculate the dimensions of the six datasets
+dims <- t(vapply(data, dim, numeric(2)))
+# Add column names for readability
+colnames(dims) <- c('nrow', 'ncol')
+print(dims)
+```
+
+From this table it is clear that the subject, X and y data should be merged 
+alongside each other as columns, while the rows of the train and test dataset 
+should be merged above each other.
+The data is merged using the `bind_rows` and `bind_cols` functions from the 
+`dplyr` package.
+
+```{r merge_data}
+# Merge the datasets horizontally first, than vertically.
+data <- bind_rows(bind_cols(data$train.subject, data$train.X, data$train.y),
+                  bind_cols(data$test.subject, data$test.X, data$test.y))
+```
+
+### Renaming activities
+
+The activities in the dataset at this point are still numerics.
+In the [activity_labels](data/UCI HAR Dataset/activity_labels.txt) file the 
+corresponding labels are mentioned.
+We can use these to set the levels of the activity factor after converting to
+lower case and replacing underscores with spaces.
+
+To make sure the labels are mapped to the correct numeric value (instead of
+relying on the positions being correct), the `mapvalues` function from the 
+`plyr` package is used.
+
+Note that the activity labels in the dataset are in the variable called `y`, 
+since these have not yet been renamed.
+
+```{r set_activity_labels}
+# Read the activity labels from file
+act_lab <- read_delim(file.path(data.dir, 'activity_labels.txt'),
+                      delim = ' ',
+                      col_names = c('id', 'label'),
+                      col_types = cols(col_character(), col_character()))
+# Adjust the labels to lower case and replace underscores
+act_lab %<>% mutate(label = gsub('_', ' ', label) %>% tolower)
+# Adjust the levels of the activity label factor
+data$y %<>% mapvalues(from = act_lab$id, to = act_lab$label)
+```
+
+### Variable names
+
+The names of the variables are available in the file 
+[features.txt](`r data.dir`/features.txt) provided with the dataset.
+Treating it as a space delimited file we can import the second column to use as
+a basis for the variable names.
+
+For brevity the parantheses are removed from the variable names.
+
+```{r var_names}
+# Read variable names
+var_names <- read_delim(file.path(data.dir, 'features.txt'),
+                        delim = ' ',
+                        col_names = c("var_names"),
+                        col_types = cols(col_skip(), col_character()))
+# Convert data.frame to simple character vector
+var_names <- unlist(var_names[[1]])
+# Remove parentheses from the field names
+var_names %<>%
+    gsub('(\\(|\\))+', '', .)
+# Set the variable names of the dataset
+names(data) <- c('subject', var_names, 'activity')
+```
+
+Next check is for duplicate variable names, which should be dealt with before 
+performing further analysis.
+Since we only need the variables containing `mean` or `std` (and the subject 
+and activity id's), we can extract those first as duplicate names in the other
+variables are no problem at this point.
+
+Note that the regular expression used only extracts the variables for which the 
+substrings `mean` and `std` are surrounded by dashes.
+This explicitly rules out the variables created using the `angle()` function 
+(see [features_info.txt](`r data.dir`/features_info.txt)).
+
+```{r check_dupl_var_names}
+# Select columns using grep which returns indices of columns that match
+data <- data[, grep('(-mean-|-std-|subject|activity)', names(data))]
+# Print the number of duplicated column names as a final check
+paste('Number of duplicated variable names:', 
+      sum(duplicated(names(data))))
+```
+
+Since there are no duplicated variable names the data is ready for the next 
+step.
+
+### Grouping and summarising
+
+The final step is to calculate the means of the variables (except the subject
+and activity variables).
+Means have to be calculated per subject, per activity so first the data is 
+grouped on those columns.
+Then all columns except `subject` and `activity` are averaged using the 
+`summarise_all` function which applies the functions in the funs argument to 
+all variables except the grouping columns.
+Finally, the data is arranged by subject and activity, and stored in the 
+variable `summarised`.
+
+```{r summarise}
+summarised <- data %>% 
+    # Group on the necessary columns
+    group_by(subject, activity) %>%
+    # Summarise all columns except the grouping columns using the mean function
+    summarise_all(mean) %>%
+    # Arrange by the grouping columns
+    arrange(subject, activity)
+```
+
+## Results
+
+The `summarised` now contains a tidy summary of the original datasets.
+The dimensions of the dataset are (`r dim(summarised)`), so 1 row for each
+(subject, activity) combination.
+
+Depending on further analyses it might be necessary to melt this dataset into 
+a long table.
+However, for now each row describes a unique combination of subject and 
+activity so it follows the tidy data rules as described by 
+[Hadley Wickham](http://vita.had.co.nz/papers/tidy-data.pdf).
+
+The last thing that remains is to write the dataset to a new csv-file.
+
+```{r write_output}
+# Write to csv
+write_csv(summarised, 'summarised.csv')
+```
+
+Although the `readr` function `write_csv` is used, a simple call to 
+`read.table` with default settings should suffice to import the data.
+
