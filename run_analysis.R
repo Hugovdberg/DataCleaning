@@ -114,7 +114,7 @@ names(data) <- c('subject', var_names, 'activity')
 
 ## ----check_dupl_var_names------------------------------------------------
 # Select columns using grep which returns indices of columns that match
-data <- data[, grep('(-mean-|-std-|subject|activity)', names(data))]
+data <- data[, grep('(-mean|-std|subject|activity)', names(data))]
 # Print the number of duplicated column names as a final check
 paste('Number of duplicated variable names:', 
       sum(duplicated(names(data))))

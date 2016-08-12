@@ -295,11 +295,11 @@ names(data) <- c('subject', var_names, 'activity')
 
 Next check is for duplicate variable names, which should be dealt with before performing further analysis. Since we only need the variables containing `mean` or `std` (and the subject and activity id's), we can extract those first as duplicate names in the other variables are no problem at this point.
 
-Note that the regular expression used only extracts the variables for which the substrings `mean` and `std` are surrounded by dashes. This explicitly rules out the variables created using the `angle()` function (see [features\_info.txt](data/UCI%20HAR%20Dataset/features_info.txt)).
+Note that the regular expression used only extracts the variables for which the substrings `mean` and `std` are following a dash. This explicitly rules out the variables created using the `angle()` function (see [features\_info.txt](data/UCI%20HAR%20Dataset/features_info.txt)).
 
 ``` r
 # Select columns using grep which returns indices of columns that match
-data <- data[, grep('(-mean-|-std-|subject|activity)', names(data))]
+data <- data[, grep('(-mean|-std|subject|activity)', names(data))]
 # Print the number of duplicated column names as a final check
 paste('Number of duplicated variable names:', 
       sum(duplicated(names(data))))
@@ -326,14 +326,15 @@ summarised <- data %>%
 Results
 -------
 
-The `summarised` now contains a tidy summary of the original datasets. The dimensions of the dataset are (180, 50), so 1 row for each (subject, activity) combination.
+The `summarised` now contains a tidy summary of the original datasets. The dimensions of the dataset are (180, 81), so 1 row for each (subject, activity) combination.
 
 Depending on further analyses it might be necessary to melt this dataset into a long table. However, for now each row describes a unique combination of subject and activity so it follows the tidy data rules as described by [Hadley Wickham](http://vita.had.co.nz/papers/tidy-data.pdf).
 
 The last thing that remains is to write the dataset to a new csv-file.
 
 ``` r
-write_csv(summarised, '../summarised.csv')
+# Write to csv
+write_csv(summarised, 'summarised.csv')
 ```
 
 Although the `readr` function `write_csv` is used, a simple call to `read.table` with default settings should suffice to import the data.

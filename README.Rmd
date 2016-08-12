@@ -236,13 +236,13 @@ and activity id's), we can extract those first as duplicate names in the other
 variables are no problem at this point.
 
 Note that the regular expression used only extracts the variables for which the 
-substrings `mean` and `std` are surrounded by dashes.
+substrings `mean` and `std` are following a dash.
 This explicitly rules out the variables created using the `angle()` function 
 (see [features_info.txt](`r data.dir`/features_info.txt)).
 
 ```{r check_dupl_var_names}
 # Select columns using grep which returns indices of columns that match
-data <- data[, grep('(-mean-|-std-|subject|activity)', names(data))]
+data <- data[, grep('(-mean|-std|subject|activity)', names(data))]
 # Print the number of duplicated column names as a final check
 paste('Number of duplicated variable names:', 
       sum(duplicated(names(data))))
