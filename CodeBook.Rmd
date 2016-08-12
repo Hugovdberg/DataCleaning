@@ -1,0 +1,123 @@
+---
+title: "Codebook for summarised UCI HAR dataset"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This file describes the variables used in the summarised dataset.
+It is largely based on 
+[features_info.txt](data/UCI HAR Dataset/features_info.txt),
+omitting the variables that have not been included in the output.
+
+## Variable names
+
+The first two variables of the dataset describe the `subject` and the 
+`activity`.
+The other variable names are composed of four parts:
+
+1. One-letter prefix `t` or `f`: is the variable in the time (`t`) or 
+    frequency (`f`) domain
+2. Parameter description: is the data describing accelerometer or gyroscopic 
+    data, is it describing body or gravity, and is it describing jerks. When 
+    the magnitude of the parameter is given it is denoted with `Mag`.
+3. Statistic: delimited by dashes is the name of the statistic describing the
+    parameter. Either mean (arithmetic average) or std (standard deviation)
+4. Directional component: Whether the parameter concerns X, Y or Z data. 
+    Magnitudes give an absolute value in all directions, denoted by direction
+    (X,Y,Z).
+
+## Units
+
+As per the notes in the [README.txt](data/UCI HAR Dataset/README.txt), all data
+has been normalised to a range of (-1, 1).
+Summarisation of the data has not affected the units of the data, as only the
+mean has been calculated for all variables per subject/activity combination.
+
+## Details
+
+Variable name       | Domain    | Parameter         | Statistic | Direction
+--------------------|-----------|-------------------|-----------|-----------
+subject             | --        | Subject id, number    | --    | --
+activity            | --        | Activity description  | --    | --
+tBodyAcc-mean-X     | time      | Body acceleration | mean      | X
+tBodyAcc-mean-Y     | time      | Body acceleration | mean      | Y
+tBodyAcc-mean-Z     | time      | Body acceleration | mean      | Z
+tBodyAcc-std-X      | time      | Body acceleration | standard deviation | X
+tBodyAcc-std-Y      | time      | Body acceleration | standard deviation | Y
+tBodyAcc-std-Z      | time      | Body acceleration | standard deviation | Z
+tGravityAcc-mean-X  | time      | Gravitational acceleration | mean      | X
+tGravityAcc-mean-Y  | time      | Gravitational acceleration | mean      | Y
+tGravityAcc-mean-Z  | time      | Gravitational acceleration | mean      | Z
+tGravityAcc-std-X   | time      | Gravitational acceleration | standard deviation  | X
+tGravityAcc-std-Y   | time      | Gravitational acceleration | standard deviation  | Y
+tGravityAcc-std-Z   | time      | Gravitational acceleration | standard deviation  | Z
+tBodyAccJerk-mean-X | time      | Body acceleration (jerks) | mean      | X
+tBodyAccJerk-mean-Y | time      | Body acceleration (jerks) | mean      | Y
+tBodyAccJerk-mean-Z | time      | Body acceleration (jerks) | mean      | Z
+tBodyAccJerk-std-X  | time      | Body acceleration (jerks) | standard deviation  | X
+tBodyAccJerk-std-Y  | time      | Body acceleration (jerks) | standard deviation  | Y
+tBodyAccJerk-std-Z  | time      | Body acceleration (jerks) | standard deviation  | Z
+tBodyGyro-mean-X    | time      | Body acceleration (gyroscopic) | mean  | X
+tBodyGyro-mean-Y    | time      | Body acceleration (gyroscopic) | mean  | Y
+tBodyGyro-mean-Z    | time      | Body acceleration (gyroscopic) | mean  | Z
+tBodyGyro-std-X     | time      | Body acceleration (gyroscopic) | standard deviation  | X
+tBodyGyro-std-Y     | time      | Body acceleration (gyroscopic) | standard deviation  | Y
+tBodyGyro-std-Z     | time      | Body acceleration (gyroscopic) | standard deviation  | Z
+tBodyGyroJerk-mean-X    | time      | Body acceleration (gyroscopic, jerks) | mean  | X
+tBodyGyroJerk-mean-Y    | time      | Body acceleration (gyroscopic, jerks) | mean  | Y
+tBodyGyroJerk-mean-Z    | time      | Body acceleration (gyroscopic, jerks) | mean  | Z
+tBodyGyroJerk-std-X     | time      | Body acceleration (gyroscopic, jerks) | standard deviation  | X
+tBodyGyroJerk-std-Y     | time      | Body acceleration (gyroscopic, jerks) | standard deviation  | Y
+tBodyGyroJerk-std-Z     | time      | Body acceleration (gyroscopic, jerks) | standard deviation  | Z
+tBodyAccMag-mean    | time      | Body acceleration (magnitude) | mean  | (X,Y,X)
+tBodyAccMag-std     | time      | Body acceleration (magnitude) | standard deviation  | (X,Y,X)
+tGravityAccMag-mean | time      | Gravitational acceleration (magnitude) | mean  | (X,Y,X)
+tGravityAccMag-std  | time      | Gravitational acceleration (magnitude) | standard deviation  | (X,Y,X)
+tBodyAccJerkMag-mean| time      | Body acceleration (jerks, magnitude) | mean   | (X,Y,Z)
+tBodyAccJerkMag-std | time      | Body acceleration (jerks, magnitude) | standard deviation | (X,Y,Z)
+tBodyGyroMag-mean   | time      | Body acceleration (gyroscopic, magnitude) | mean   | (X,Y,Z)
+tBodyGyroMag-std    | time      | Body acceleration (gyroscopic, magnitude) | standard deviation   | (X,Y,Z)
+tBodyGyroJerkMag-mean   | time      | Body acceleration (gyroscopic, jerks, magnitude) | mean  | (X,Y,Z)
+tBodyGyroJerkMag-std    | time      | Body acceleration (gyroscopic, jerks, magnitude) | standard deviation   | (X,Y,Z)
+fBodyAcc-mean-X     | frequency | Body acceleration | mean      | X
+fBodyAcc-mean-Y     | frequency | Body acceleration | mean      | Y
+fBodyAcc-mean-Z     | frequency | Body acceleration | mean      | Z
+fBodyAcc-std-X      | frequency | Body acceleration | standard deviation  | X
+fBodyAcc-std-Y      | frequency | Body acceleration | standard deviation  | Y
+fBodyAcc-std-Z      | frequency | Body acceleration | standard deviation  | Z
+fBodyAcc-meanFreq-X | frequency | Body acceleration | mean frequency    | X
+fBodyAcc-meanFreq-Y | frequency | Body acceleration | mean frequency    | Y
+fBodyAcc-meanFreq-Z | frequency | Body acceleration | mean frequency    | Z
+fBodyAccJerk-mean-X | frequency | Body acceleration (jerks) | mean      | X
+fBodyAccJerk-mean-Y | frequency | Body acceleration (jerks) | mean      | Y
+fBodyAccJerk-mean-Z | frequency | Body acceleration (jerks) | mean      | Z
+fBodyAccJerk-std-X  | frequency | Body acceleration (jerks) | standard deviation      | X
+fBodyAccJerk-std-Y  | frequency | Body acceleration (jerks) | standard deviation      | Y
+fBodyAccJerk-std-Z  | frequency | Body acceleration (jerks) | standard deviation      | Z
+fBodyAccJerk-meanFreq-X | frequency | Body acceleration (jerks) | mean frequency    | X
+fBodyAccJerk-meanFreq-Y | frequency | Body acceleration (jerks) | mean frequency    | Y
+fBodyAccJerk-meanFreq-Z | frequency | Body acceleration (jerks) | mean frequency    | Z
+fBodyGyro-mean-X    | frequency | Body acceleration (gyroscopic) | mean  | X
+fBodyGyro-mean-Y    | frequency | Body acceleration (gyroscopic) | mean  | Y
+fBodyGyro-mean-Z    | frequency | Body acceleration (gyroscopic) | mean  | Z
+fBodyGyro-std-X     | frequency | Body acceleration (gyroscopic) | standard deviation  | X
+fBodyGyro-std-Y     | frequency | Body acceleration (gyroscopic) | standard deviation  | Y
+fBodyGyro-std-Z     | frequency | Body acceleration (gyroscopic) | standard deviation  | Z
+fBodyGyro-meanFreq-X    | frequency | Body acceleration (gyroscopic) | mean frequency    | X
+fBodyGyro-meanFreq-Y    | frequency | Body acceleration (gyroscopic) | mean frequency    | Y
+fBodyGyro-meanFreq-Z    | frequency | Body acceleration (gyroscopic) | mean frequency    | Z
+fBodyAccMag-mean        | frequency | Body acceleration (magnitude) | mean  | (X,Y,Z)
+fBodyAccMag-std         | frequency | Body acceleration (magnitude) | standard deviation    | (X,Y,Z)
+fBodyAccMag-meanFreq    | frequency | Body acceleration (magnitude) | mean frequency    | (X,Y,Z)
+fBodyBodyAccJerkMag-mean        | frequency | Body acceleration (jerks, magnitude) | mean  | (X,Y,Z)
+fBodyBodyAccJerkMag-std         | frequency | Body acceleration (jerks, magnitude) | standard deviation    | (X,Y,Z)
+fBodyBodyAccJerkMag-meanFreq    | frequency | Body acceleration (jerks, magnitude) | mean frequency    | (X,Y,Z)
+fBodyBodyGyroMag-mean       | frequency | Body acceleration (gyroscopic, magnitude) | mean  | (X,Y,Z)
+fBodyBodyGyroMag-std        | frequency | Body acceleration (gyroscopic, magnitude) | standard deviation    | (X,Y,Z)
+fBodyBodyGyroMag-meanFreq   | frequency | Body acceleration (gyroscopic, magnitude) | mean frequency    | (X,Y,Z)
+fBodyBodyGyroJerkMag-mean       | frequency | Body acceleration (gyroscopic, jerks, magnitude) | mean  | (X,Y,Z)
+fBodyBodyGyroJerkMag-std        | frequency | Body acceleration (gyroscopic, jerks, magnitude) | standard deviation    | (X,Y,Z)
+fBodyBodyGyroJerkMag-meanFreq   | frequency | Body acceleration (gyroscopic, jerks, magnitude) | mean frequency    | (X,Y,Z)
