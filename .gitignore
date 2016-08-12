@@ -3,4 +3,4 @@
 .RData
 .Ruserdata
 summarised.csv
-data/UCI_HAR_Dataset.zip
+data/*
