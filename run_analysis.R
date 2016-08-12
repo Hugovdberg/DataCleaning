@@ -10,20 +10,14 @@ library(dplyr) # v0.5.0
 ## ----download------------------------------------------------------------
 # Configure remote and local data locations
 data.url <- 'https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip'
-data.dir = 'data'
-data.file <- file.path(data.dir, 'UCI_HAR_Dataset.zip')
-# Create local data directory if necessary
-if (!dir.exists(data.dir)) {
-    dir.create(data.dir, recursive = TRUE)
-}
+data.dir <- 'UCI HAR Dataset'
+data.file <- 'UCI_HAR_Dataset.zip'
 # Download the remote file to the data directory
 if (!file.exists(data.file)) {
-    download.file(url = data.url, destfile = data.file, overwrite = TRUE)
+    download.file(url = data.url, destfile = data.file)
 }
 # Unzip the downloaded file
-unzip(data.file, exdir = data.dir)
-# Set new data directory
-data.dir <- file.path(data.dir, 'UCI HAR Dataset')
+unzip(data.file, exdir = '.', overwrite = TRUE)
 
 ## ----check_delims--------------------------------------------------------
 # Create a list of the paths to the data files
