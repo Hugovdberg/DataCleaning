@@ -76,19 +76,26 @@ data$test.X %<>% read_fwf(col_positions = fwf_widths(rep(field_width, 561)),
                           col_types = paste0(rep("d", 561), collapse = ""))
 
 ## ----check_dims----------------------------------------------------------
+# Calculate the dimensions of the six datasets
 dims <- t(vapply(data, dim, numeric(2)))
+# Add column names for readability
 colnames(dims) <- c('nrow', 'ncol')
 print(dims)
 
 ## ----merge_data----------------------------------------------------------
+# Merge the datasets horizontally first, than vertically.
 data <- bind_rows(bind_cols(data$train.subject, data$train.X, data$train.y),
                   bind_cols(data$test.subject, data$test.X, data$test.y))
 
 ## ----set_activity_labels-------------------------------------------------
+# Read the activity labels from file
 act_lab <- read_delim(file.path(data.dir, 'activity_labels.txt'),
                       delim = ' ',
                       col_names = c('id', 'label'),
                       col_types = cols(col_character(), col_character()))
+# Adjust the labels to lower case and replace underscores
+act_lab %<>% mutate(label = gsub('_', ' ', label) %>% tolower)
+# Adjust the levels of the activity label factor
 data$y %<>% mapvalues(from = act_lab$id, to = act_lab$label)
 
 ## ----var_names-----------------------------------------------------------
@@ -106,13 +113,22 @@ var_names %<>%
 names(data) <- c('subject', var_names, 'activity')
 
 ## ----check_dupl_var_names------------------------------------------------
-data <- data[grep('(-mean-|-std-|subject|activity)', names(data))]
+# Select columns using grep which returns indices of columns that match
+data <- data[, grep('(-mean-|-std-|subject|activity)', names(data))]
+# Print the number of duplicated column names as a final check
 paste('Number of duplicated variable names:', 
       sum(duplicated(names(data))))
 
-## ------------------------------------------------------------------------
+## ----summarise-----------------------------------------------------------
 summarised <- data %>% 
+    # Group on the necessary columns
     group_by(subject, activity) %>%
-    summarise_each(funs(mean), -subject, -activity) %>%
+    # Summarise all columns except the grouping columns using the mean function
+    summarise_all(mean) %>%
+    # Arrange by the grouping columns
     arrange(subject, activity)
+
+## ----write_output--------------------------------------------------------
+# Write to csv
+write_csv(summarised, 'summarised.csv')
 
